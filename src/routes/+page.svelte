@@ -50,6 +50,7 @@
 	let epochs = 2;
 	let datasetFile: FileList;
 	let testingImageFiles: FileList;
+	let testingResponse: any = null;
 
 	// How websocket thing will work:
 	// When train is clicked, loads while the files are being sent
@@ -64,7 +65,14 @@
 	// maybe also be able to test it
 
 	const test = async () => {
-		return;
+		const file = testingImageFiles[0];
+		const formData = new FormData();
+		formData.append('file', file);
+		const res = await fetch('http://localhost:5000/test', {
+			method: 'POST',
+			body: formData
+		});
+		testingResponse = res;
 	}
 
 	const train = async () => {
@@ -89,7 +97,7 @@
 		const testJson = {
 			'layers': [
 				{'type': 'flatten'},
-				{'type': 'linear', 'in_channels': 28*28, 'out_channels': 256},
+				{'type': 'linear', 'in_channels': 28*28*3, 'out_channels': 256},
 				{'type': 'relu'},
 				{'type': 'linear', 'in_channels': 256, 'out_channels': 256},
 				{'type': 'relu'},
@@ -144,6 +152,8 @@
 			a.href = url;
 			a.download = "weights.ckpt";
 		});
+
+		// TODO: UN COMMENT !!!!!
 
 		// const resp = await fetch('http://localhost:5000/dataset', {
 		// 	method: 'POST',
@@ -403,6 +413,7 @@
 												on:click={test}
 												>Test
 											</Button>
+											<p>{testingResponse ? testingResponse : 'Loading...'}</p>
 										</div>
 									</Card>
 								{/if}

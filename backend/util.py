@@ -216,7 +216,7 @@ def validate():
             correct += (predicted == labels).sum().item()
     print(f'Accuracy of the network on the {total} test images: {100 * correct / total}%')
 
-def test(img):
+def test_image(img):
     device = (
         "cuda"
         if torch.cuda.is_available()
@@ -225,7 +225,8 @@ def test(img):
         else "cpu"
     )
     model = torch.load('model.pt').to(device)
-    res = model.eval(np.array(img).astype('float32').reshape(1, 28, 28))
+    model.eval()
+    res = model(np.array(img).astype('float32').reshape(1, 28, 28))
     return res
 
 def run(json):

@@ -66,10 +66,11 @@ def train(data: dict):
 
 @app.route("/test", methods=['POST'])
 def test():
+    from util import test_image
     file = request.files['file']    
     img = Image.open(file.stream)
-    res = test(img)
-    return jsonify({'status':' ok'})
+    res = test_image(img)
+    return jsonify({'res': res})
 
 @socketio.on('client_connected')
 def handle_client_connect_event(data):
