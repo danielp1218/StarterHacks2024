@@ -14,6 +14,7 @@ from torch.utils.data import DataLoader
 import torchvision.transforms as transforms
 import torchvision.datasets as datasets
 from PIL import Image
+from flask_socketio import emit
 
 
 """
@@ -76,7 +77,7 @@ def json_to_optimizer(json: dict, parameters) -> torch.optim.Optimizer:
     if optimizer['type'] == 'sgd':
         return optim.SGD(params=parameters, lr=optimizer['lr'])
     elif optimizer['type'] == 'adam':
-        return optim.Adam(params=parameters, lr=optimizer['lr'], betas=[0.9, 0.99])
+        return optim.Adam(params=parameters, lr=optimizer['lr'], betas=(0.9, 0.99))
     elif optimizer['type'] == 'adagrad':
         return optim.Adagrad(params=parameters, lr=optimizer['lr'])
     else:
@@ -142,11 +143,13 @@ def getDataLoaders(dataset: CustomDataset):
         "val": DataLoader(val_set, batch_size=16, shuffle=False)
     }
 
-def train(criterion, opt, model, trainloader, epochs=2, device='cpu'):
+def train(criterion, opt, model, trainloader, device, epochs=2):
+    emit('started_training', 'started training')
     running_loss = 0.0
 
     for e in range(epochs):
         print(f'Epoch {e + 1}')
+        emit('epoch', f'Epoch {e + 1}')
         count = 0
         for inputs, labels in trainloader:
             inputs, labels = inputs.to(device), labels.to(device)
@@ -161,8 +164,10 @@ def train(criterion, opt, model, trainloader, epochs=2, device='cpu'):
             count += 1
             if count % 2000 == 1999:    # print every 2000 mini-batches
                 print(f'[{e + 1}, {count + 1:5d}] loss: {running_loss / 100:.3f}')
+                # emit('some sort of timeline thing', 'started training')
                 running_loss = 0.0
 
+    emit('finished_training', 'finished training')
 
 testJson = {
     'layers': [
@@ -230,9 +235,9 @@ def run(json):
     criterion = json_to_criterion(json)
 
     
-    dataset = CustomDataset('data/train')
+    dataset = CustomDataset(pathlib.Path(__file__).parent / 'data')
     loaders = getDataLoaders(dataset)
     trainloader = loaders['train']
-    train(criterion, opt, model, trainloader, epochs=2, device=device)
+    train(criterion, opt, model, trainloader, device, epochs=2)
 
     torch.save(model, 'model.pt')

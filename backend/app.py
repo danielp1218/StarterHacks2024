@@ -1,4 +1,6 @@
 from flask import Flask, jsonify, request
+from flask_cors import CORS
+from flask_socketio import SocketIO
 
 import os
 import pathlib
@@ -7,6 +9,8 @@ from werkzeug.datastructures import FileStorage
 import uuid
 
 app = Flask(__name__)
+CORS(app)
+socketio = SocketIO(app, cors_allowed_origins="*")
 
 def save_images(files: list[FileStorage]):
     unique = str(uuid.uuid4())
@@ -19,7 +23,27 @@ def save_images(files: list[FileStorage]):
         file.save(sub / (file.filename or f'{str(uuid.uuid4())}.png'))
     return unique
 
+import zipfile
+import io
 
+# @socketio.on('dataset')
+@app.route('/dataset', methods=['POST'])
+# types ??
+def handle_dataset():
+    files = {}
+    file = request.files['file']
+    with zipfile.ZipFile(file.stream, 'r') as input_zip:
+        input_zip.extractall(pathlib.Path(__file__).parent / 'data')
+
+    return 'ok'
+
+        # files = {name: input_zip.read(name) for name in input_zip.namelist()}
+
+    # return list(files.items())[0]
+    # file_data = data['data']
+    # file_name = data['name']
+
+# RECEIVED AS ZIP
 @app.route("/images", methods=['POST'])
 def hello_world():
     # file format: label-#.ext
@@ -27,5 +51,34 @@ def hello_world():
     foldername = save_images(list(training_images.values()))
     return jsonify({'status': 'ok', 'folder': foldername})
 
+# @app.route("/train", methods=['POST'])
+@socketio.on('train')
+def train(data: dict):
+    from util import run
+    import json
+    print(1)
+    run(data)
+    print(2)
+    return 'ok'
+    # send accuracy, graph?, ...
+    # return jsonify({'status': 'ok'})
+
+@app.route("/test", methods=['POST'])
+def test():
+    ...
+    return jsonify({'status':' ok'})
+
+@socketio.on('client_connected')
+def handle_client_connect_event(data):
+    print("connected")
+    print(str(data))    
+@socketio.on('disconnect')
+def disconnected():
+    print('disconnected')
+@socketio.on('connect')
+def connected():
+    print('connected')
+
+
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
+    socketio.run(app, use_reloader=True, log_output=True, debug=True, port=int(os.environ.get("PORT", 5000)))

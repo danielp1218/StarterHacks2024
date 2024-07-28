@@ -40,6 +40,7 @@
 		}
 	};
 
+	const socket = io('http://127.0.0.1:5000', {withCredentials: true});
 	let optimizerType: string = "sgd";
 	let learningRate = 0.1;
 	let schedulerType: string = "plateau";
@@ -81,7 +82,7 @@
 		const testJson = {
 			'layers': [
 				{'type': 'flatten'},
-				{'type': 'linear', 'in_channels': 28*28, 'out_channels': 256},
+				{'type': 'linear', 'in_channels': 28*28*3, 'out_channels': 256},
 				{'type': 'relu'},
 				{'type': 'linear', 'in_channels': 256, 'out_channels': 256},
 				{'type': 'relu'},
@@ -101,19 +102,30 @@
 		// @ts-ignore
 		jsonToSend = testJson;
 
+		let done = false;
 
-		const socket = io();
+		// socket.on("connect", () => {
+		waitingForServer = true;
+		console.log(123);
+		const file = datasetFile[0];
+		const formData = new FormData();
+		formData.append('file', file);
 
-		socket.on("connect", () => {
-			socket.emit("train", jsonToSend);
-			socket.emit("dataset", datasetFile[0]);
-		});
+		// const resp = await fetch('http://localhost:5000/dataset', {
+		// 	method: 'POST',
+		// 	body: formData
+		// })
+		// console.log(await resp.text())
+		// if (!done) await socket.emitWithAck("dataset", datasetFile[0]);
+		console.log(456);
+		if (!done) await socket.emitWithAck("train", jsonToSend);
+		console.log(789);
+		done = true;
+		// });
 
 		socket.on("clientError", (message) => {
 			console.error(message);
 		})
-
-		waitingForServer = true;
 
 		socket.on("started_training", (message) => {
 			waitingForServer = false;
