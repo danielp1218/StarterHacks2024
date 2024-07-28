@@ -1,36 +1,41 @@
 <script lang="ts">
-	import { Button, Card, Field, NumberStepper, Paginate, Progress, Step, Steps } from 'svelte-ux';
-	import Layer from '$lib/components/Layer.svelte';
-	import { mdiTrashCan } from '@mdi/js';
-	import { slide } from 'svelte/transition';
-	import { io } from 'socket.io-client';
+	import { Button, Card, Field, NumberStepper, Paginate, Progress, Step, Steps } from "svelte-ux";
+	import Layer from "$lib/components/Layer.svelte";
+	import { mdiTrashCan } from "@mdi/js";
+	import { slide } from "svelte/transition";
+	import { io } from "socket.io-client";
 
 	interface Layer {
-		'type': string;
-		'inputSize': number | undefined;
-		'outputSize': number | undefined;
-		'kernelSize': number | undefined;
+		type: string;
+		inputSize: number | undefined;
+		outputSize: number | undefined;
+		kernelSize: number | undefined;
 	}
 
-	let layers: Layer[] = [{
-		'type': 'linear',
-		'inputSize': 1,
-		'outputSize': 1,
-		'kernelSize': undefined
-	}];
+	let layers: Layer[] = [
+		{
+			type: "linear",
+			inputSize: 1,
+			outputSize: 1,
+			kernelSize: undefined
+		}
+	];
 
 	const addLayer = () => {
-		layers = [...layers, {
-			'type': 'linear',
-			'inputSize': 1,
-			'outputSize': 1,
-			'kernelSize': undefined
-		}];
+		layers = [
+			...layers,
+			{
+				type: "linear",
+				inputSize: 1,
+				outputSize: 1,
+				kernelSize: undefined
+			}
+		];
 	};
 
-	let optimizerType: string = 'sgd';
+	let optimizerType: string = "sgd";
 	let learningRate = 0.1;
-	let schedulerType: string = 'plateau';
+	let schedulerType: string = "plateau";
 	let patience = 10;
 	let epochs = 2;
 	let datasetFile: FileList;
@@ -49,52 +54,52 @@
 
 	const train = async () => {
 		if (!datasetFile) {
-			alert('Please upload a dataset');
+			alert("Please upload a dataset");
 			return;
 		}
 
 		const jsonToSend = {
-			'layers': layers,
-			'optimizer': {
-				'type': optimizerType,
-				'learningRate': learningRate
+			layers: layers,
+			optimizer: {
+				type: optimizerType,
+				learningRate: learningRate
 			},
-			'scheduler': {
-				'type': schedulerType,
-				'patience': patience
+			scheduler: {
+				type: schedulerType,
+				patience: patience
 			},
-			'epochs': epochs
+			epochs: epochs
 		};
 
-		const socket = io('https://server-domain.com');
+		const socket = io("https://server-domain.com");
 
-		socket.on('connect', () => {
-			socket.emit('train', jsonToSend);
-			socket.emit('dataset', datasetFile[0]);
+		socket.on("connect", () => {
+			socket.emit("train", jsonToSend);
+			socket.emit("dataset", datasetFile[0]);
 		});
 
 		waitingForServer = true;
 
-		socket.on('started_training', (message) => {
+		socket.on("started_training", (message) => {
 			waitingForServer = false;
 			training = true;
 		});
 
-		socket.on('epoch', (epoch) => {
+		socket.on("epoch", (epoch) => {
 			trainingEpoch = epoch;
 		});
 
-		socket.on('finished_training', (message) => {
+		socket.on("finished_training", (message) => {
 			training = false;
 			finishedTraining = true;
 		});
 
-		socket.on('send_weights', (weights) => {
-			const blob = new Blob([weights], { type: 'application/octet-stream' });
+		socket.on("send_weights", (weights) => {
+			const blob = new Blob([weights], { type: "application/octet-stream" });
 			const url = URL.createObjectURL(blob);
-			const a = document.createElement('a');
+			const a = document.createElement("a");
 			a.href = url;
-			a.download = 'weights.ckpt';
+			a.download = "weights.ckpt";
 		});
 	};
 
@@ -109,14 +114,15 @@
 	};
 </script>
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link
 	href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Rosario:ital,wght@0,300..700;1,300..700&family=Work+Sans:ital,wght@0,100..900;1,100..900&display=swap"
-	rel="stylesheet">
+	rel="stylesheet"
+/>
 
 <main class="">
-	<img class="bg" src="/background.png" alt="background" draggable="false">
+	<img class="bg" src="/background.png" alt="background" draggable="false" />
 	<div class="py-36 px-[36rem]">
 		<Card class="rounded-2xl">
 			<div class="p-8">
@@ -157,9 +163,16 @@
 												{/if}
 												{#if i !== 0}
 													<Button
-														icon={{ data: mdiTrashCan, size: "2rem", style: "color: crimson" }}
+														icon={{
+															data: mdiTrashCan,
+															size: "2rem",
+															style: "color: crimson"
+														}}
 														color="danger"
-														on:click={() => layers = layers.filter((_, index) => index !== i)}
+														on:click={() =>
+															(layers = layers.filter(
+																(_, index) => index !== i
+															))}
 													>
 														Delete
 													</Button>
@@ -169,7 +182,9 @@
 									</div>
 									<div class="p-4" />
 								{/each}
-								<Button variant="fill" color="accent" size="lg" on:click={addLayer}>Add Layer</Button>
+								<Button variant="fill" color="accent" size="lg" on:click={addLayer}
+									>Add Layer</Button
+								>
 							{:else if current.page === 2}
 								<Card title="Optimizer" class="rounded-xl">
 									<div class="p-4">
@@ -180,7 +195,9 @@
 												{id}
 												class="text-sm w-full outline-none appearance-none cursor-pointer bg-surface-100"
 											>
-												<option value={"sgd"}>Stochastic Gradient Descent</option>
+												<option value={"sgd"}
+													>Stochastic Gradient Descent</option
+												>
 												<option value={"adam"}>Adam</option>
 												<option value={"adagrad"}>Adagrad</option>
 											</select>
@@ -188,9 +205,15 @@
 										</Field>
 										<div class="py-4" />
 										<h1 class="text-2xl font-semibold pb-4">Learning Rate</h1>
-										<NumberStepper class="w-full" on:change={(e) => learningRate = e.detail.value}
-																	 min={0.00000000000001} max={1} step={0.00001} value={learningRate}
-																	 bind:learningRate />
+										<NumberStepper
+											class="w-full"
+											on:change={(e) => (learningRate = e.detail.value)}
+											min={0.00000000000001}
+											max={1}
+											step={0.00001}
+											value={learningRate}
+											bind:learningRate
+										/>
 									</div>
 								</Card>
 							{:else if current.page === 3}
@@ -209,27 +232,42 @@
 											<span slot="append"></span>
 										</Field>
 										<div class="py-4" />
-										{#if schedulerType === 'plateau'}
+										{#if schedulerType === "plateau"}
 											<h1 class="text-2xl font-semibold pb-4">Patience</h1>
-											<NumberStepper class="w-full" on:change={(e) => patience = e.detail.value} min={2}
-																		 value={patience} bind:patience />
+											<NumberStepper
+												class="w-full"
+												on:change={(e) => (patience = e.detail.value)}
+												min={2}
+												value={patience}
+												bind:patience
+											/>
 										{/if}
 									</div>
 								</Card>
-
 							{:else if current.page === 4}
-								<Card title="Optimizer" class="rounded-xl">
+								<Card title="Training" class="rounded-xl">
 									<div class="p-4">
 										<h1 class="text-2xl font-semibold pb-4">Epochs</h1>
-										<NumberStepper class="w-full" on:change={(e) => epochs = e.detail.value}
-																	 min={1} value={epochs}
-																	 bind:epochs />
+										<NumberStepper
+											class="w-full"
+											on:change={(e) => (epochs = e.detail.value)}
+											min={1}
+											value={epochs}
+											bind:epochs
+										/>
 										<div class="py-4" />
 										<div class="flex items-center gap-4">
-											<label class="cursor-pointer text-md bg-primary-500 p-4 rounded">
+											<label
+												class="cursor-pointer text-md bg-primary-500 p-4 rounded"
+											>
 												Upload Dataset
 												<input
-													accept=".zip" bind:files={datasetFile} id="avatar" name="avatar" type="file" required
+													accept=".zip"
+													bind:files={datasetFile}
+													id="avatar"
+													name="avatar"
+													type="file"
+													required
 												/>
 											</label>
 											<h1>{datasetFile?.[0]?.name ?? "Upload a file..."}</h1>
@@ -239,27 +277,31 @@
 											<Progress value={round(trainingEpoch / epochs, 3)} />
 										{/if}
 										<div class="py-4" />
-										<Button size="lg" color="secondary" variant="fill" class="w-full" loading={waitingForServer}
-														on:click={train}>Train
+										<Button
+											size="lg"
+											color="secondary"
+											variant="fill"
+											class="w-full"
+											loading={waitingForServer}
+											on:click={train}
+											>Train
 										</Button>
 									</div>
 								</Card>
-
 							{/if}
 						</div>
 					</div>
 					<div class="pt-12">
 						<Button on:click={pagination.prevPage} disabled={current.isFirst}
-						>Previous
-						</Button
-						>
+							>Previous
+						</Button>
 						<Button
 							on:click={pagination.nextPage}
 							color="primary"
 							variant="fill"
-							disabled={current.isLast}>Next
-						</Button
-						>
+							disabled={current.isLast}
+							>Next
+						</Button>
 					</div>
 				</Paginate>
 			</div>
@@ -268,29 +310,36 @@
 </main>
 
 <style>
-    * {
-        font-family: Work Sans, sans-serif;
-    }
+	* {
+		font-family:
+			Work Sans,
+			sans-serif;
+	}
 
-    .bg {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        filter: blur(24px);
-    }
+	.bg {
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		filter: blur(24px);
+	}
 
-    .gradient-text {
-        font-size: 72px;
-        background: -webkit-linear-gradient(180deg, rgba(45, 25, 183, 1) 0%, rgba(183, 25, 154, 1) 52%, rgba(255, 96, 0, 1) 100%);
-        background-clip: text;
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-    }
+	.gradient-text {
+		font-size: 72px;
+		background: -webkit-linear-gradient(
+			180deg,
+			rgba(45, 25, 183, 1) 0%,
+			rgba(183, 25, 154, 1) 52%,
+			rgba(255, 96, 0, 1) 100%
+		);
+		background-clip: text;
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+	}
 
-    input[type="file"] {
-        display: none;
-    }
+	input[type="file"] {
+		display: none;
+	}
 </style>
