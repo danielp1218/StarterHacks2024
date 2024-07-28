@@ -56,10 +56,10 @@
 
 	const socket = io("http://127.0.0.1:5000", { withCredentials: true });
 	let optimizerType: string = "sgd";
-	let learningRate = 0.1;
+	let learningRate = 0.001;
 	let schedulerType: string = "plateau";
 	let patience = 10;
-	let epochs = 2;
+	let epochs = 1;
 	let datasetFile: FileList;
 	let testingImageFiles: FileList;
 	let testingResponse: any = null;
