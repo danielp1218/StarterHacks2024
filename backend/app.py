@@ -13,8 +13,10 @@ def save_images(files: list[FileStorage]):
     p = pathlib.Path(__file__).parent / f"{unique}/"
     p.mkdir(parents=True, exist_ok=True)
     for file in files:
+        sub = p / ((file.filename.split('-')[0] if file.filename else 'test') or 'test')
+        sub.mkdir(parents=True, exist_ok=True)
         # filename = f'{unique}.{file.filename and file.filename.split(".")[1:] or "png"}'
-        file.save(p / (file.filename.split('-')[0] if file.filename else 'test') / (file.filename or f'{str(uuid.uuid4())}.png'))
+        file.save(sub / (file.filename or f'{str(uuid.uuid4())}.png'))
     return unique
 
 
