@@ -86,8 +86,9 @@ def json_to_criterion(json: dict) -> nn.Module:
 # I would like to direct your attention to one thing. In line 7, you may notice that the final linear layer has 3 output neurons. This is because the example I mentioned in the beginning has 3 classes (cat/dog/rabbit).
 # auto do that
 class Net(nn.Module):
-    def __init__(self, layers: list[nn.Module]):
+    def __init__(self, layers: list[nn.Module], num_of_categories: int):
         super().__init__()
+        # how to integrate num of categories into the last layer ???
         self.stack = nn.Sequential(*layers)
 
     def forward(self, x):
@@ -195,10 +196,11 @@ device = (
     else "cpu"
 )
 
-net = Net(json_to_layers(testJson)).to(device)
-opt = json_to_optimizer(testJson, net)
-criterion = json_to_criterion(testJson)
+def run():
+    net = Net(json_to_layers(testJson), 2).to(device)
+    opt = json_to_optimizer(testJson, net)
+    criterion = json_to_criterion(testJson)
 
-trainloader = getDataLoaders(CustomDataset('data'))['train']
-train(criterion, opt, 'data', trainloader)
-torch.save(net, 'model.pt')
+    trainloader = getDataLoaders(CustomDataset('data'))['train']
+    train(criterion, opt, 'data', trainloader)
+    torch.save(net, 'model.pt')
