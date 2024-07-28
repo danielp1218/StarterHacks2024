@@ -7,6 +7,7 @@ import pathlib
 
 from werkzeug.datastructures import FileStorage
 import uuid
+from PIL import Image
 
 app = Flask(__name__)
 CORS(app)
@@ -65,7 +66,9 @@ def train(data: dict):
 
 @app.route("/test", methods=['POST'])
 def test():
-    ...
+    file = request.files['file']    
+    img = Image.open(file.stream)
+    res = test(img)
     return jsonify({'status':' ok'})
 
 @socketio.on('client_connected')
