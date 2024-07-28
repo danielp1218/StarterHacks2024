@@ -250,6 +250,6 @@ def run(json):
     dataset = CustomDataset(pathlib.Path(__file__).parent / 'data')
     loaders = getDataLoaders(dataset)
     trainloader = loaders['train']
-    train(criterion, opt, model, trainloader, device, epochs=2)
+    train(criterion, opt, model, trainloader, device, epochs=json['epochs'])
 
     torch.save(model, 'model.pt')
