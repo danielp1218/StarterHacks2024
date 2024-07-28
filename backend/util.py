@@ -131,8 +131,8 @@ def getDataLoaders(dataset: CustomDataset):
 
     return {
         "train": DataLoader(train_set, batch_size=16, shuffle=True),
-        "test": DataLoader(test_set, batch_size=16, shuffle=False),
-        "val": DataLoader(val_set, batch_size=16, shuffle=False)
+        "test": DataLoader(test_set, batch_size=16, shuffle=True),
+        "val": DataLoader(val_set, batch_size=16, shuffle=True)
     }
 
 def train(criterion, opt, model, trainloader, epochs=2, device='cpu'):
@@ -182,23 +182,23 @@ testJson = {
 def run(device):
     device = torch.device(device)
 
-    mnist = [(np.array(data[0]).astype('float32'),data[1]) for data in datasets.MNIST(root='data', train=True, download=True)]
-    print(len(mnist))
+    #mnist = [(np.array(data[0]).astype('float32'),data[1]) for data in datasets.MNIST(root='data', train=True, download=True)]
+    #print(len(mnist))
     #trainloader = DataLoader(mnist, batch_size=4, shuffle=True)
     model = Model(json_to_layers(testJson)).to(device)
     opt = json_to_optimizer(testJson, model.parameters())
     criterion = json_to_criterion(testJson)
 
     
-    #dataset = CustomDataset('data')
-    #trainloader = getDataLoaders(mnist)['train']
-    trainloader = DataLoader(mnist, batch_size=4, shuffle=True)
+    dataset = CustomDataset('data')
+    loaders = getDataLoaders(dataset)
+    trainloader = loaders['train']
+    #trainloader = DataLoader(mnist, batch_size=4, shuffle=True)
     print(trainloader.batch_size)
     train(criterion, opt, model, trainloader, epochs=2, device=device)
 
     # validate
-    testMnist = [(np.array(data[0]).astype('float32'),data[1]) for data in datasets.MNIST(root='data', train=False, download=True)]
-    testloader = DataLoader(testMnist, batch_size=4, shuffle=False)
+    testLoader = loaders['test']
     correct = 0
     total = 0
     with torch.no_grad():
