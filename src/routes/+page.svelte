@@ -3,7 +3,7 @@
 	import Layer from '$lib/components/Layer.svelte';
 	import { mdiTrashCan } from '@mdi/js';
 	import { slide } from 'svelte/transition';
-	import { io } from "socket.io-client";
+	import { io } from 'socket.io-client';
 
 	interface Layer {
 		'type': string;
@@ -63,10 +63,10 @@
 				'type': schedulerType,
 				'patience': patience
 			},
-			'epochs': epochs,
-		}
+			'epochs': epochs
+		};
 
-		const socket = io("https://server-domain.com");
+		const socket = io('https://server-domain.com');
 
 		socket.on('connect', () => {
 			socket.emit('train', jsonToSend);
@@ -88,6 +88,14 @@
 			training = false;
 			finishedTraining = true;
 		});
+
+		socket.on('send_weights', (weights) => {
+			const blob = new Blob([weights], { type: 'application/octet-stream' });
+			const url = URL.createObjectURL(blob);
+			const a = document.createElement('a');
+			a.href = url;
+			a.download = 'weights.ckpt';
+		});
 	};
 
 	let waitingForServer = false;
@@ -98,7 +106,7 @@
 	const round = (num: number, places: number) => {
 		const multiplier = Math.pow(10, places);
 		return Math.round(num * multiplier) / multiplier;
-	}
+	};
 </script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -231,7 +239,9 @@
 											<Progress value={round(trainingEpoch / epochs, 3)} />
 										{/if}
 										<div class="py-4" />
-										<Button size="lg" color="secondary" variant="fill" class="w-full" loading={waitingForServer} on:click={train}>Train</Button>
+										<Button size="lg" color="secondary" variant="fill" class="w-full" loading={waitingForServer}
+														on:click={train}>Train
+										</Button>
 									</div>
 								</Card>
 
