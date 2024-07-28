@@ -179,15 +179,22 @@ testJson = {
 }
 
 
-def run(device):
+def run(json):
+    device = (
+        "cuda"
+        if torch.cuda.is_available()
+        else "mps"
+        if torch.backends.mps.is_available()
+        else "cpu"
+    )
     device = torch.device(device)
 
     mnist = [(np.array(data[0]).astype('float32'),data[1]) for data in datasets.MNIST(root='data', train=True, download=True)]
     print(len(mnist))
     #trainloader = DataLoader(mnist, batch_size=4, shuffle=True)
-    model = Model(json_to_layers(testJson)).to(device)
-    opt = json_to_optimizer(testJson, model.parameters())
-    criterion = json_to_criterion(testJson)
+    model = Model(json_to_layers(json)).to(device)
+    opt = json_to_optimizer(json, model.parameters())
+    criterion = json_to_criterion(json)
 
     
     #dataset = CustomDataset('data')
@@ -213,12 +220,3 @@ def run(device):
 
     torch.save(model, 'model.pt')
 
-device = (
-    "cuda"
-    if torch.cuda.is_available()
-    else "mps"
-    if torch.backends.mps.is_available()
-    else "cpu"
-)
-
-run(device)
