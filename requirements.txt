@@ -2,3 +2,5 @@ torch
 torchvision
 torchaudio
 flask
+flask-socketio
+flask_cors

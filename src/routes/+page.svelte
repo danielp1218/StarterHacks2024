@@ -1,10 +1,11 @@
 <script lang="ts">
-	import { Button, Card, Field, NumberStepper, Paginate, Progress, Step, Steps, Tooltip } from 'svelte-ux';
-	import Layer from '$lib/components/Layer.svelte';
-	import { mdiTrashCan } from '@mdi/js';
-	import { slide, fade } from 'svelte/transition';
-	import { io } from 'socket.io-client';
+	import { Button, Card, Field, NumberStepper, Paginate, Progress, Step, Steps, Tooltip } from "svelte-ux";
+	import Layer from "$lib/components/Layer.svelte";
+	import { mdiTrashCan } from "@mdi/js";
+	import { slide } from "svelte/transition";
+	import { io } from "socket.io-client";
 	import { quintIn } from 'svelte/easing';
+
 
 	interface Layer {
 		type: string;
@@ -15,7 +16,7 @@
 
 	let layers: Layer[] = [
 		{
-			type: 'linear',
+			type: "linear",
 			inputSize: 1,
 			outputSize: 1,
 			kernelSize: undefined
@@ -26,7 +27,7 @@
 		layers = [
 			...layers,
 			{
-				type: 'linear',
+				type: "linear",
 				inputSize: 1,
 				outputSize: 1,
 				kernelSize: undefined
@@ -34,16 +35,17 @@
 		];
 
 		for (let i = 0; i < layers.length; i++) {
-			if (!['relu', 'softmax', 'flatten'].includes(layers[i].type)) {
+			if (!["relu", "softmax", "flatten"].includes(layers[i].type)) {
 				firstLayer = i;
 				return;
 			}
 		}
 	};
 
-	let optimizerType: string = 'sgd';
+	const socket = io('http://127.0.0.1:5000', {withCredentials: true});
+	let optimizerType: string = "sgd";
 	let learningRate = 0.1;
-	let schedulerType: string = 'plateau';
+	let schedulerType: string = "plateau";
 	let patience = 10;
 	let epochs = 2;
 	let datasetFile: FileList;
@@ -62,7 +64,7 @@
 
 	const train = async () => {
 		if (!datasetFile) {
-			alert('Please upload a dataset');
+			alert("Please upload a dataset");
 			return;
 		}
 
@@ -81,61 +83,72 @@
 
 		const testJson = {
 			'layers': [
-				{ 'type': 'flatten' },
-				{ 'type': 'linear', 'in_channels': 28 * 28, 'out_channels': 256 },
-				{ 'type': 'relu' },
-				{ 'type': 'linear', 'in_channels': 256, 'out_channels': 256 },
-				{ 'type': 'relu' },
-				{ 'type': 'linear', 'in_channels': 256, 'out_channels': 10 }
+				{'type': 'flatten'},
+				{'type': 'linear', 'in_channels': 28*28, 'out_channels': 256},
+				{'type': 'relu'},
+				{'type': 'linear', 'in_channels': 256, 'out_channels': 256},
+				{'type': 'relu'},
+				{'type': 'linear', 'in_channels': 256, 'out_channels': 10}
 			],
 			'optimizer': {
 				'type': 'sgd',
-				'lr': 0.001
+				'lr': 0.001,
 			},
 			'loss': {
 				'type': 'CrossEntropyLoss'
 			},
 			'reduceLrOnPlateau': {
-				'type': 'ReduceLROnPlateau'
+				'type': 'ReduceLROnPlateau',
 			}
-		};
+		}
 		// @ts-ignore
 		jsonToSend = testJson;
 
+		let done = false;
 
-		const socket = io();
-
-		socket.on('connect', () => {
-			socket.emit('train', jsonToSend);
-			socket.emit('dataset', datasetFile[0]);
-		});
-
-		socket.on('clientError', (message) => {
-			console.error(message);
-		});
-
+		// socket.on("connect", () => {
 		waitingForServer = true;
+		console.log(123);
+		const file = datasetFile[0];
+		const formData = new FormData();
+		formData.append('file', file);
 
-		socket.on('started_training', (message) => {
+		// const resp = await fetch('http://localhost:5000/dataset', {
+		// 	method: 'POST',
+		// 	body: formData
+		// })
+		// console.log(await resp.text())
+		// if (!done) await socket.emitWithAck("dataset", datasetFile[0]);
+		console.log(456);
+		if (!done) await socket.emitWithAck("train", jsonToSend);
+		console.log(789);
+		done = true;
+		// });
+
+		socket.on("clientError", (message) => {
+			console.error(message);
+		})
+
+		socket.on("started_training", (message) => {
 			waitingForServer = false;
 			training = true;
 		});
 
-		socket.on('epoch', (epoch) => {
+		socket.on("epoch", (epoch) => {
 			trainingEpoch = epoch;
 		});
 
-		socket.on('finished_training', (message) => {
+		socket.on("finished_training", (message) => {
 			training = false;
 			finishedTraining = true;
 		});
 
-		socket.on('send_weights', (weights) => {
-			const blob = new Blob([weights], { type: 'application/octet-stream' });
+		socket.on("send_weights", (weights) => {
+			const blob = new Blob([weights], { type: "application/octet-stream" });
 			const url = URL.createObjectURL(blob);
-			const a = document.createElement('a');
+			const a = document.createElement("a");
 			a.href = url;
-			a.download = 'weights.ckpt';
+			a.download = "weights.ckpt";
 		});
 	};
 
@@ -146,6 +159,7 @@
 
 	let firstLayer = 0;
 
+	
 
 	const round = (num: number, places: number) => {
 		const multiplier = Math.pow(10, places);
@@ -243,8 +257,7 @@
 									<div class="p-4" />
 								{/each}
 								<Button variant="fill" color="accent" size="lg" on:click={addLayer}
-								>Add Layer
-								</Button
+									>Add Layer</Button
 								>
 							{:else if current.page === 2}
 								<Card title="Optimizer" class="rounded-xl">
@@ -257,8 +270,7 @@
 												class="text-sm w-full outline-none appearance-none cursor-pointer bg-surface-100"
 											>
 												<option value={"sgd"}
-												>Stochastic Gradient Descent
-												</option
+													>Stochastic Gradient Descent</option
 												>
 												<option value={"adam"}>Adam</option>
 												<option value={"adagrad"}>Adagrad</option>
@@ -346,7 +358,7 @@
 											class="w-full"
 											loading={waitingForServer}
 											on:click={train}
-										>Train
+											>Train
 										</Button>
 									</div>
 								</Card>
@@ -355,14 +367,14 @@
 					</div>
 					<div class="pt-12">
 						<Button on:click={pagination.prevPage} disabled={current.isFirst}
-						>Previous
+							>Previous
 						</Button>
 						<Button
 							on:click={pagination.nextPage}
 							color="primary"
 							variant="fill"
 							disabled={current.isLast}
-						>Next
+							>Next
 						</Button>
 					</div>
 				</Paginate>
@@ -372,35 +384,36 @@
 </main>
 
 <style>
-    * {
-        font-family: Work Sans,
-        sans-serif;
-    }
+	* {
+		font-family:
+			Work Sans,
+			sans-serif;
+	}
 
-    .bg {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        filter: blur(24px);
-    }
+	.bg {
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		filter: blur(24px);
+	}
 
-    .gradient-text {
-        font-size: 72px;
-        background: -webkit-linear-gradient(
-                180deg,
-                rgba(45, 25, 183, 1) 0%,
-                rgba(183, 25, 154, 1) 52%,
-                rgba(255, 96, 0, 1) 100%
-        );
-        background-clip: text;
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-    }
+	.gradient-text {
+		font-size: 72px;
+		background: -webkit-linear-gradient(
+			180deg,
+			rgba(45, 25, 183, 1) 0%,
+			rgba(183, 25, 154, 1) 52%,
+			rgba(255, 96, 0, 1) 100%
+		);
+		background-clip: text;
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+	}
 
-    input[type="file"] {
-        display: none;
-    }
+	input[type="file"] {
+		display: none;
+	}
 </style>
