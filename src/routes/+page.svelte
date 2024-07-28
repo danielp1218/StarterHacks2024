@@ -218,7 +218,7 @@
 								</Card>
 
 							{:else if current.page === 4}
-								<Card title="Optimizer" class="rounded-xl">
+								<Card title="Training" class="rounded-xl">
 									<div class="p-4">
 										<h1 class="text-2xl font-semibold pb-4">Epochs</h1>
 										<NumberStepper class="w-full" on:change={(e) => epochs = e.detail.value}
