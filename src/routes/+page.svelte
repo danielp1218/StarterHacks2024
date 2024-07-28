@@ -49,6 +49,7 @@
 	let patience = 10;
 	let epochs = 2;
 	let datasetFile: FileList;
+	let testingImageFiles: FileList;
 
 	// How websocket thing will work:
 	// When train is clicked, loads while the files are being sent
@@ -61,6 +62,10 @@
 	// maybe model is saved and can be downloaded
 	// maybe also code
 	// maybe also be able to test it
+
+	const test = async () => {
+		return;
+	}
 
 	const train = async () => {
 		if (!datasetFile) {
@@ -208,6 +213,12 @@
 								</div>
 								<Step completed={current.page >= 4}>Train</Step>
 							</Tooltip>
+							<Tooltip title="Hello">
+								<div slot="title" class="bg-opacity-30 bg-blue-600 p-2 rounded-xl" in:slide={{duration: 500, easing:quintIn, axis:'y'}}>
+									<p class="w-72 text-xs text-center">test</p>
+								</div>
+								<Step completed={current.page >= 5}>Test</Step>
+							</Tooltip>
 						</Steps>
 					</div>
 					<div class="py-24 px-8">
@@ -319,51 +330,82 @@
 										{/if}
 									</div>
 								</Card>
-							{:else if current.page === 4}
-								<Card title="Training" class="rounded-xl">
-									<div class="p-4">
-										<h1 class="text-2xl font-semibold pb-4">Epochs</h1>
-										<NumberStepper
-											class="w-full"
-											on:change={(e) => (epochs = e.detail.value)}
-											min={1}
-											value={epochs}
-											bind:epochs
-										/>
-										<div class="py-4" />
-										<div class="flex items-center gap-4">
-											<label
-												class="cursor-pointer text-md bg-primary-500 p-4 rounded"
-											>
-												Upload Dataset
-												<input
-													accept=".zip"
-													bind:files={datasetFile}
-													id="avatar"
-													name="avatar"
-													type="file"
-													required
-												/>
-											</label>
-											<h1>{datasetFile?.[0]?.name ?? "Upload a file..."}</h1>
+								{:else if current.page === 4}
+									<Card title="Training" class="rounded-xl">
+										<div class="p-4">
+											<h1 class="text-2xl font-semibold pb-4">Epochs</h1>
+											<NumberStepper
+												class="w-full"
+												on:change={(e) => (epochs = e.detail.value)}
+												min={1}
+												value={epochs}
+												bind:epochs
+											/>
+											<div class="py-4" />
+											<div class="flex items-center gap-4">
+												<label
+													class="cursor-pointer text-md bg-primary-500 p-4 rounded"
+												>
+													Upload Dataset
+													<input
+														accept=".zip"
+														bind:files={datasetFile}
+														id="avatar"
+														name="avatar"
+														type="file"
+														required
+													/>
+												</label>
+												<h1>{datasetFile?.[0]?.name ?? "Upload a file..."}</h1>
+											</div>
+											<div class="py-4" />
+											{#if training}
+												<Progress value={round(trainingEpoch / epochs, 3)} />
+											{/if}
+											<div class="py-4" />
+											<Button
+												size="lg"
+												color="secondary"
+												variant="fill"
+												class="w-full"
+												loading={waitingForServer}
+												on:click={train}
+												>Train
+											</Button>
 										</div>
-										<div class="py-4" />
-										{#if training}
-											<Progress value={round(trainingEpoch / epochs, 3)} />
-										{/if}
-										<div class="py-4" />
-										<Button
-											size="lg"
-											color="secondary"
-											variant="fill"
-											class="w-full"
-											loading={waitingForServer}
-											on:click={train}
-											>Train
-										</Button>
-									</div>
-								</Card>
-							{/if}
+									</Card>
+								{:else if current.page === 5}
+									<Card title="Testing" class="rounded-xl">
+										<div class="p-4">
+											<div class="flex items-center gap-4">
+												<label
+													class="cursor-pointer text-md bg-primary-500 p-4 rounded"
+												>
+													Upload Image
+													<input
+														accept="image/*"
+														bind:files={testingImageFiles}
+														id="imagefile"
+														name="imagefile"
+														type="file"
+														required
+													/>
+												</label>
+												<h1>{testingImageFiles?.[0]?.name ?? "Upload a file..."}</h1>
+											</div>
+											<div class="py-4" />
+											<Button
+												size="lg"
+												color="secondary"
+												variant="fill"
+												class="w-full"
+												loading={true}
+												on:click={test}
+												>Test
+											</Button>
+										</div>
+									</Card>
+								{/if}
 						</div>
 					</div>
 					<div class="pt-12">
@@ -374,7 +416,7 @@
 							on:click={pagination.nextPage}
 							color="primary"
 							variant="fill"
-							disabled={current.isLast}
+							disabled={current.isLast || (!finishedTraining && current.page == 4)}
 							>Next
 						</Button>
 					</div>
