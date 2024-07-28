@@ -4,7 +4,7 @@
 	import { mdiTrashCan } from "@mdi/js";
 	import { slide } from "svelte/transition";
 	import { io } from "socket.io-client";
-	import { quintIn } from 'svelte/easing';
+	import { quintIn } from "svelte/easing";
 
 
 	interface Layer {
@@ -42,7 +42,7 @@
 		}
 	};
 
-	const socket = io('http://127.0.0.1:5000', {withCredentials: true});
+	const socket = io("http://127.0.0.1:5000", { withCredentials: true });
 	let optimizerType: string = "sgd";
 	let learningRate = 0.1;
 	let schedulerType: string = "plateau";
@@ -65,7 +65,7 @@
 
 	const test = async () => {
 		return;
-	}
+	};
 
 	const train = async () => {
 		if (!datasetFile) {
@@ -87,25 +87,25 @@
 		};
 
 		const testJson = {
-			'layers': [
-				{'type': 'flatten'},
-				{'type': 'linear', 'in_channels': 28*28, 'out_channels': 256},
-				{'type': 'relu'},
-				{'type': 'linear', 'in_channels': 256, 'out_channels': 256},
-				{'type': 'relu'},
-				{'type': 'linear', 'in_channels': 256, 'out_channels': 10}
+			"layers": [
+				{ "type": "flatten" },
+				{ "type": "linear", "in_channels": 28 * 28, "out_channels": 256 },
+				{ "type": "relu" },
+				{ "type": "linear", "in_channels": 256, "out_channels": 256 },
+				{ "type": "relu" },
+				{ "type": "linear", "in_channels": 256, "out_channels": 10 }
 			],
-			'optimizer': {
-				'type': 'sgd',
-				'lr': 0.001,
+			"optimizer": {
+				"type": "sgd",
+				"lr": 0.001
 			},
-			'loss': {
-				'type': 'CrossEntropyLoss'
+			"loss": {
+				"type": "CrossEntropyLoss"
 			},
-			'reduceLrOnPlateau': {
-				'type': 'ReduceLROnPlateau',
+			"reduceLrOnPlateau": {
+				"type": "ReduceLROnPlateau"
 			}
-		}
+		};
 		// @ts-ignore
 		jsonToSend = testJson;
 
@@ -116,12 +116,12 @@
 		console.log(123);
 		const file = datasetFile[0];
 		const formData = new FormData();
-		formData.append('file', file);
+		formData.append("file", file);
 
-		
+
 		socket.on("clientError", (message) => {
 			console.error(message);
-		})
+		});
 
 		socket.on("started_training", (message) => {
 			waitingForServer = false;
@@ -165,7 +165,6 @@
 
 	let firstLayer = 0;
 
-	
 
 	const round = (num: number, places: number) => {
 		const multiplier = Math.pow(10, places);
@@ -185,37 +184,46 @@
 	<div class="py-32 flex justify-center">
 		<Card class="rounded-2xl">
 			<div class="p-8">
-				<h1 class="gradient-text font-bold pb-12">Insert Name Here</h1>
+				<h1 class="gradient-text font-bold pb-12">MLCraft</h1>
 				<Paginate data={[1, 2, 3, 4]} perPage={1} let:pagination let:current>
 					<div class="flex justify-center">
 						<Steps>
 							<Tooltip>
-								<div slot="title" class="bg-opacity-30 bg-orange-300 p-2 rounded-xl" in:slide={{duration: 500, easing:quintIn, axis:'y'}}>
-									<p class="w-72 text-xs text-center">In AI, layers are fundamental units of neural networks. They consist of nodes that process data and pass results to the next layer. There are three types: input, hidden, and output layers.</p>
+								<div slot="title" class="bg-opacity-30 bg-orange-300 p-2 rounded-xl"
+									 in:slide={{duration: 500, easing:quintIn, axis:'y'}}>
+									<p class="w-72 text-xs text-center">In AI, layers are fundamental units of neural
+										networks. They consist of nodes that process data and pass results to the next
+										layer. There are three types: input, hidden, and output layers.</p>
 								</div>
 								<Step completed={current.page >= 1}>Layers</Step>
 							</Tooltip>
 							<Tooltip title="Hello">
-								<div slot="title" class="bg-opacity-30 bg-pink-400 p-2 rounded-xl" in:slide={{duration: 500, easing:quintIn, axis:'y'}}>
-									<p class="w-72 text-xs text-center">test</p>
+								<div slot="title" class="bg-opacity-30 bg-pink-400 p-2 rounded-xl"
+									 in:slide={{duration: 500, easing:quintIn, axis:'y'}}>
+									<p class="w-72 text-xs text-center">An optimizer adjusts the model's parameters to
+										minimize the loss function during training.</p>
 								</div>
 								<Step completed={current.page >= 2}>Optimizer</Step>
 							</Tooltip>
 							<Tooltip title="Hello">
-								<div slot="title" class="bg-opacity-30 bg-purple-600 p-2 rounded-xl" in:slide={{duration: 500, easing:quintIn, axis:'y'}}>
-									<p class="w-72 text-xs text-center">test</p>
+								<div slot="title" class="bg-opacity-30 bg-purple-600 p-2 rounded-xl"
+									 in:slide={{duration: 500, easing:quintIn, axis:'y'}}>
+									<p class="w-72 text-xs text-center">Learning rate is the step size used by the
+										optimizer to update model parameters.</p>
 								</div>
 								<Step completed={current.page >= 3}>Learning Rate</Step>
 							</Tooltip>
 							<Tooltip title="Hello">
-								<div slot="title" class="bg-opacity-30 bg-blue-600 p-2 rounded-xl" in:slide={{duration: 500, easing:quintIn, axis:'y'}}>
-									<p class="w-72 text-xs text-center">test</p>
+								<div slot="title" class="bg-opacity-30 bg-blue-600 p-2 rounded-xl"
+									 in:slide={{duration: 500, easing:quintIn, axis:'y'}}>
+									<p class="w-72 text-xs text-center">Train the model</p>
 								</div>
 								<Step completed={current.page >= 4}>Train</Step>
 							</Tooltip>
 							<Tooltip title="Hello">
-								<div slot="title" class="bg-opacity-30 bg-blue-600 p-2 rounded-xl" in:slide={{duration: 500, easing:quintIn, axis:'y'}}>
-									<p class="w-72 text-xs text-center">test</p>
+								<div slot="title" class="bg-opacity-30 bg-blue-600 p-2 rounded-xl"
+									 in:slide={{duration: 500, easing:quintIn, axis:'y'}}>
+									<p class="w-72 text-xs text-center">Evaluate the model</p>
 								</div>
 								<Step completed={current.page >= 5}>Test</Step>
 							</Tooltip>
@@ -224,7 +232,29 @@
 					<div class="py-24 px-8">
 						<div>
 							{#if current.page === 1}
-								<h1 class="text-4xl font-semibold pb-4">Layers</h1>
+								<Tooltip>
+									<div slot="title" class="bg-blue-950 p-4 rounded-xl text-white">
+										Linear: A fully connected layer that applies a linear transformation to the
+										input.
+										<br>
+										2D Convolution: Applies 2D convolutional filters to the input, useful for image
+										processing.
+										<br>
+										ReLU: Applies the Rectified Linear Unit activation function, setting all
+										negative values to zero.
+										<br>
+										Softmax: Converts a vector of values to a probability distribution, useful for
+										classification.
+										<br>
+										Flatten: Flattens the input tensor to a 1D array, typically used before fully
+										connected layers.
+										<br>
+										2D Max Pooling: Applies 2D max pooling to reduce the spatial dimensions of the
+										input.
+
+									</div>
+									<h1 class="text-4xl font-semibold pb-4">Layers</h1>
+								</Tooltip>
 								{#each layers as layer, i}
 									<div transition:slide>
 										<!-- title="Layer {i + 1}" -->
@@ -232,7 +262,7 @@
 											<div class="p-4">
 												{#if i !== 0}
 													<Layer
-														isFirstLayer={i == firstLayer}
+														isFirstLayer={i === firstLayer}
 														inputSize={layers[i - 1].outputSize}
 														bind:layerType={layers[i].type}
 														bind:outputSize={layers[i].outputSize}
@@ -240,7 +270,7 @@
 													/>
 												{:else}
 													<Layer
-														isFirstLayer={i == firstLayer}
+														isFirstLayer={i === firstLayer}
 														bind:layerType={layers[i].type}
 														bind:inputSize={layers[i].inputSize}
 														bind:outputSize={layers[i].outputSize}
@@ -269,42 +299,52 @@
 									<div class="p-4" />
 								{/each}
 								<Button variant="fill" color="accent" size="lg" on:click={addLayer}
-									>Add Layer</Button
+								>Add Layer
+								</Button
 								>
 							{:else if current.page === 2}
 								<Card title="Optimizer" class="rounded-xl">
 									<div class="p-4">
-										<h1 class="text-2xl font-semibold pb-4">Optimizer Type</h1>
-										<Field label="Type" let:id>
-											<select
-												bind:value={optimizerType}
-												{id}
-												class="text-sm w-full outline-none appearance-none cursor-pointer bg-surface-100"
-											>
-												<option value={"sgd"}
-													>Stochastic Gradient Descent</option
+										<Tooltip
+											title="Optimizer type refers to the specific algorithm used to update model parameters, such as SGD, Adam, Adagrad">
+											<h1 class="text-2xl font-semibold pb-4">Optimizer Type</h1>
+											<Field label="Type" let:id>
+												<select
+													bind:value={optimizerType}
+													{id}
+													class="text-sm w-full outline-none appearance-none cursor-pointer bg-surface-100"
 												>
-												<option value={"adam"}>Adam</option>
-												<option value={"adagrad"}>Adagrad</option>
-											</select>
-											<span slot="append"></span>
-										</Field>
+													<option value={"sgd"}
+													>Stochastic Gradient Descent
+													</option
+													>
+													<option value={"adam"}>Adam</option>
+													<option value={"adagrad"}>Adagrad</option>
+												</select>
+												<span slot="append"></span>
+											</Field>
+										</Tooltip>
 										<div class="py-4" />
-										<h1 class="text-2xl font-semibold pb-4">Learning Rate</h1>
-										<NumberStepper
-											class="w-full"
-											on:change={(e) => (learningRate = e.detail.value)}
-											min={0.00000000000001}
-											max={1}
-											step={0.00001}
-											value={learningRate}
-											bind:learningRate
-										/>
+										<Tooltip
+											title="Learning rate is the step size used by the optimizer to update model parameters.">
+											<h1 class="text-2xl font-semibold pb-4">Learning Rate</h1>
+											<NumberStepper
+												class="w-full"
+												on:change={(e) => (learningRate = e.detail.value)}
+												min={0.00000000000001}
+												max={1}
+												step={0.00001}
+												value={learningRate}
+												bind:learningRate
+											/>
+										</Tooltip>
 									</div>
 								</Card>
 							{:else if current.page === 3}
 								<Card title="Learning Rate Scheduler" class="rounded-xl">
 									<div class="p-4">
+										<Tooltip
+											title="A learning rate scheduler adjusts the learning rate during training to improve model performance.">
 										<h1 class="text-2xl font-semibold pb-4">Scheduler Type</h1>
 										<Field label="Type" let:id>
 											<select
@@ -317,8 +357,11 @@
 											</select>
 											<span slot="append"></span>
 										</Field>
+										</Tooltip>
 										<div class="py-4" />
 										{#if schedulerType === "plateau"}
+											<Tooltip
+												title="The number of epochs with no improvement after which learning rate will be reduced.">
 											<h1 class="text-2xl font-semibold pb-4">Patience</h1>
 											<NumberStepper
 												class="w-full"
@@ -327,97 +370,101 @@
 												value={patience}
 												bind:patience
 											/>
+											</Tooltip>
 										{/if}
 									</div>
 								</Card>
-								{:else if current.page === 4}
-									<Card title="Training" class="rounded-xl">
-										<div class="p-4">
-											<h1 class="text-2xl font-semibold pb-4">Epochs</h1>
-											<NumberStepper
-												class="w-full"
-												on:change={(e) => (epochs = e.detail.value)}
-												min={1}
-												value={epochs}
-												bind:epochs
-											/>
-											<div class="py-4" />
-											<div class="flex items-center gap-4">
-												<label
-													class="cursor-pointer text-md bg-primary-500 p-4 rounded"
-												>
-													Upload Dataset
-													<input
-														accept=".zip"
-														bind:files={datasetFile}
-														id="avatar"
-														name="avatar"
-														type="file"
-														required
-													/>
-												</label>
-												<h1>{datasetFile?.[0]?.name ?? "Upload a file..."}</h1>
-											</div>
-											<div class="py-4" />
-											{#if training}
-												<Progress value={round(trainingEpoch / epochs, 3)} />
-											{/if}
-											<div class="py-4" />
-											<Button
-												size="lg"
-												color="secondary"
-												variant="fill"
-												class="w-full"
-												loading={waitingForServer}
-												on:click={train}
-												>Train
-											</Button>
+							{:else if current.page === 4}
+								<Card title="Training" class="rounded-xl">
+									<div class="p-4">
+										<Tooltip
+											title="An epoch is a single pass through the entire dataset during training.">
+										<h1 class="text-2xl font-semibold pb-4">Epochs</h1>
+										<NumberStepper
+											class="w-full"
+											on:change={(e) => (epochs = e.detail.value)}
+											min={1}
+											value={epochs}
+											bind:epochs
+										/>
+										</Tooltip>
+										<div class="py-4" />
+										<div class="flex items-center gap-4">
+											<label
+												class="cursor-pointer text-md bg-primary-500 p-4 rounded"
+											>
+												Upload Dataset
+												<input
+													accept=".zip"
+													bind:files={datasetFile}
+													id="avatar"
+													name="avatar"
+													type="file"
+													required
+												/>
+											</label>
+											<h1>{datasetFile?.[0]?.name ?? "Upload a file..."}</h1>
 										</div>
-									</Card>
-								{:else if current.page === 5}
-									<Card title="Testing" class="rounded-xl">
-										<div class="p-4">
-											<div class="flex items-center gap-4">
-												<label
-													class="cursor-pointer text-md bg-primary-500 p-4 rounded"
-												>
-													Upload Image
-													<input
-														accept="image/*"
-														bind:files={testingImageFiles}
-														id="imagefile"
-														name="imagefile"
-														type="file"
-														required
-													/>
-												</label>
-												<h1>{testingImageFiles?.[0]?.name ?? "Upload a file..."}</h1>
-											</div>
-											<div class="py-4" />
-											<Button
-												size="lg"
-												color="secondary"
-												variant="fill"
-												class="w-full"
-												loading={true}
-												on:click={test}
-												>Test
-											</Button>
+										<div class="py-4" />
+										{#if training}
+											<Progress value={round(trainingEpoch / epochs, 3)} />
+										{/if}
+										<div class="py-4" />
+										<Button
+											size="lg"
+											color="secondary"
+											variant="fill"
+											class="w-full"
+											loading={waitingForServer}
+											on:click={train}
+										>Train
+										</Button>
+									</div>
+								</Card>
+							{:else if current.page === 5}
+								<Card title="Testing" class="rounded-xl">
+									<div class="p-4">
+										<div class="flex items-center gap-4">
+											<label
+												class="cursor-pointer text-md bg-primary-500 p-4 rounded"
+											>
+												Upload Image
+												<input
+													accept="image/*"
+													bind:files={testingImageFiles}
+													id="imagefile"
+													name="imagefile"
+													type="file"
+													required
+												/>
+											</label>
+											<h1>{testingImageFiles?.[0]?.name ?? "Upload a file..."}</h1>
 										</div>
-									</Card>
-								{/if}
+										<div class="py-4" />
+										<Button
+											size="lg"
+											color="secondary"
+											variant="fill"
+											class="w-full"
+											loading={true}
+											on:click={test}
+										>Test
+										</Button>
+									</div>
+								</Card>
+							{/if}
 						</div>
 					</div>
 					<div class="pt-12">
 						<Button on:click={pagination.prevPage} disabled={current.isFirst}
-							>Previous
+						>Previous
 						</Button>
 						<Button
 							on:click={pagination.nextPage}
 							color="primary"
 							variant="fill"
 							disabled={current.isLast || (!finishedTraining && current.page == 4)}
-							>Next
+						>Next
 						</Button>
 					</div>
 				</Paginate>
@@ -427,36 +474,35 @@
 </main>
 
 <style>
-	* {
-		font-family:
-			Work Sans,
-			sans-serif;
-	}
+    * {
+        font-family: Work Sans,
+        sans-serif;
+    }
 
-	.bg {
-		position: fixed;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
-		filter: blur(24px);
-	}
+    .bg {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        filter: blur(24px);
+    }
 
-	.gradient-text {
-		font-size: 72px;
-		background: -webkit-linear-gradient(
-			180deg,
-			rgba(45, 25, 183, 1) 0%,
-			rgba(183, 25, 154, 1) 52%,
-			rgba(255, 96, 0, 1) 100%
-		);
-		background-clip: text;
-		-webkit-background-clip: text;
-		-webkit-text-fill-color: transparent;
-	}
+    .gradient-text {
+        font-size: 72px;
+        background: -webkit-linear-gradient(
+                180deg,
+                rgba(45, 25, 183, 1) 0%,
+                rgba(183, 25, 154, 1) 52%,
+                rgba(255, 96, 0, 1) 100%
+        );
+        background-clip: text;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
 
-	input[type="file"] {
-		display: none;
-	}
+    input[type="file"] {
+        display: none;
+    }
 </style>

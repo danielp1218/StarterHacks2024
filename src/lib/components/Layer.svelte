@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Field, NumberStepper } from "svelte-ux";
+	import { Field, NumberStepper, Tooltip } from "svelte-ux";
 
 	export let layerType = "linear";
 	export let inputSize = 1;
@@ -27,39 +27,45 @@
 <div class="flex">
 	{#if !["relu", "softmax", "flatten"].includes(layerType)}
 		{#if isFirstLayer}
-		<div class="pe-4">
-			<h1 class="font-semibold">Input Size</h1>
-			<NumberStepper
-				on:change={(e) => (inputSize = e.detail.value)}
-				min={1}
-				value={inputSize}
-				bind:inputSize
-				class="min-w-32"
-			/>
-		</div>
-			
+			<div class="pe-4">
+				<h1 class="font-semibold">Input Size</h1>
+				<Tooltip title="Number of units from the previous layer.">
+					<NumberStepper
+						on:change={(e) => (inputSize = e.detail.value)}
+						min={1}
+						value={inputSize}
+						bind:inputSize
+						class="min-w-32"
+					/>
+				</Tooltip>
+			</div>
+
 		{/if}
 		<div class="px-4">
-			<h1 class="font-semibold">Output Size</h1>
-			<NumberStepper
-				on:change={(e) => (outputSize = e.detail.value)}
-				min={1}
-				value={outputSize}
-				bind:outputSize
-				class="min-w-32"
-			/>
+			<Tooltip title="Number of units in the current layer.">
+				<h1 class="font-semibold">Output Size</h1>
+				<NumberStepper
+					on:change={(e) => (outputSize = e.detail.value)}
+					min={1}
+					value={outputSize}
+					bind:outputSize
+					class="min-w-32"
+				/>
+			</Tooltip>
 		</div>
 	{/if}
 	{#if ["conv2d", "maxpool2d"].includes(layerType)}
 		<div class="px-4">
 			<h1 class="font-semibold">Kernel Size</h1>
-			<NumberStepper
-				on:change={(e) => (kernelSize = e.detail.value)}
-				min={1}
-				value={kernelSize}
-				bind:kernelSize
-				class="w-min-32"
-			/>
+			<Tooltip title="Kernel size is the dimensions of the filter used in a convolutional neural network.">
+				<NumberStepper
+					on:change={(e) => (kernelSize = e.detail.value)}
+					min={1}
+					value={kernelSize}
+					bind:kernelSize
+					class="w-min-32"
+				/>
+			</Tooltip>
 		</div>
 	{/if}
 </div>
