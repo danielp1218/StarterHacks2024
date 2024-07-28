@@ -19,7 +19,7 @@
 		<option value={"conv2d"}>2D Convolution</option>
 		<option value={"relu"}>ReLU</option>
 		<option value={"softmax"}>Softmax</option>
-		<option value={"flatten"}>Flatter</option>
+		<option value={"flatten"}>Flatten</option>
 		<option value={"maxpool2d"}>2D Max Pooling</option>
 	</select>
 	<span slot="append"></span>
