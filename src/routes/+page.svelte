@@ -31,6 +31,13 @@
 				kernelSize: undefined
 			}
 		];
+
+		for (let i = 0; i < layers.length; i++) {
+			if (!["relu", "softmax", "flatten"].includes(layers[i].type)) {
+				firstLayer = i;
+				return;
+			}
+		}
 	};
 
 	let optimizerType: string = "sgd";
@@ -58,7 +65,7 @@
 			return;
 		}
 
-		const jsonToSend = {
+		let jsonToSend = {
 			layers: layers,
 			optimizer: {
 				type: optimizerType,
@@ -71,12 +78,40 @@
 			epochs: epochs
 		};
 
-		const socket = io("https://server-domain.com");
+		const testJson = {
+			'layers': [
+				{'type': 'flatten'},
+				{'type': 'linear', 'in_channels': 28*28, 'out_channels': 256},
+				{'type': 'relu'},
+				{'type': 'linear', 'in_channels': 256, 'out_channels': 256},
+				{'type': 'relu'},
+				{'type': 'linear', 'in_channels': 256, 'out_channels': 10}
+			],
+			'optimizer': {
+				'type': 'sgd',
+				'lr': 0.001,
+			},
+			'loss': {
+				'type': 'CrossEntropyLoss'
+			},
+			'reduceLrOnPlateau': {
+				'type': 'ReduceLROnPlateau',
+			}
+		}
+		// @ts-ignore
+		jsonToSend = testJson;
+
+
+		const socket = io();
 
 		socket.on("connect", () => {
 			socket.emit("train", jsonToSend);
 			socket.emit("dataset", datasetFile[0]);
 		});
+
+		socket.on("clientError", (message) => {
+			console.error(message);
+		})
 
 		waitingForServer = true;
 
@@ -108,22 +143,26 @@
 	let trainingEpoch = 0;
 	let finishedTraining = false;
 
+	let firstLayer = 0;
+
+	
+
 	const round = (num: number, places: number) => {
 		const multiplier = Math.pow(10, places);
 		return Math.round(num * multiplier) / multiplier;
 	};
 </script>
 
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous">
 <link
 	href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Rosario:ital,wght@0,300..700;1,300..700&family=Work+Sans:ital,wght@0,100..900;1,100..900&display=swap"
 	rel="stylesheet"
 />
 
 <main class="">
-	<img class="bg" src="/background.png" alt="background" draggable="false" />
-	<div class="py-36 px-[36rem]">
+	<img class="bg" src="/background.png" alt="background" draggable="false">
+	<div class="-py-36- -px-[36rem]-">
 		<Card class="rounded-2xl">
 			<div class="p-8">
 				<h1 class="gradient-text font-bold pb-12">Insert Name Here</h1>
@@ -142,11 +181,12 @@
 								<h1 class="text-4xl font-semibold pb-4">Layers</h1>
 								{#each layers as layer, i}
 									<div transition:slide>
-										<Card title="Layer {i + 1}" class="rounded-xl">
+										<!-- title="Layer {i + 1}" -->
+										<Card class="rounded-xl">
 											<div class="p-4">
 												{#if i !== 0}
 													<Layer
-														isFirstLayer={i === 0}
+														isFirstLayer={i == firstLayer}
 														inputSize={layers[i - 1].outputSize}
 														bind:layerType={layers[i].type}
 														bind:outputSize={layers[i].outputSize}
@@ -154,7 +194,7 @@
 													/>
 												{:else}
 													<Layer
-														isFirstLayer={true}
+														isFirstLayer={i == firstLayer}
 														bind:layerType={layers[i].type}
 														bind:inputSize={layers[i].inputSize}
 														bind:outputSize={layers[i].outputSize}
