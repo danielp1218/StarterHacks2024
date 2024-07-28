@@ -1,6 +1,6 @@
 import torch.nn as nn
 import torch
-
+import glob
 import os
 import torch.optim as optim
 import torch.optim.optimizer
@@ -11,7 +11,9 @@ from torch.utils.data import Dataset
 import torch.utils.data
 from torchvision.io import read_image, ImageReadMode
 from torch.utils.data import DataLoader
+import torchvision.transforms as transforms
 import torchvision.datasets as datasets
+from PIL import Image
 
 
 """
@@ -100,25 +102,30 @@ class Model(nn.Module):
         return logits
 
 class CustomDataset(Dataset):
-    def __init__(self, root_dir):
+    def __init__(self, root_dir, image_dimensions=(28, 28)):
+        self.image_size = image_dimensions
         self.image_paths = []
-        for ext in ['png', 'jpg']:
-            self.image_paths += str(pathlib.Path(__file__).parent / root_dir / '*' / f'*.{ext}')
-        class_set = set()
-        for path in self.image_paths:
-            class_set.add(os.path.dirname(path))
-        self.class_lbl = { cls: i for i, cls in enumerate(sorted(list(class_set)))}
-        print(self.class_lbl)
+        self.labels = []
+        self.resize = transforms.Resize(self.image_size)
+        for dir in os.listdir(root_dir):
+            self.labels.append(dir)
+            for file in os.listdir(os.path.join(root_dir, dir)):
+                if file.endswith('.png') or file.endswith('.jpg'):
+                    self.image_paths.append(os.path.join(root_dir, dir, file))
 
     def __len__(self):
         return len(self.image_paths)
-
+    
     def __getitem__(self, idx):
-        img = read_image(self.image_paths[idx], ImageReadMode.RGB).float()
+        #img = read_image(self.image_paths[idx], ImageReadMode.RGB).float()
+        img = Image.open(self.image_paths[idx]).convert('RGB')
+        # print(self.image_size)
+        img = self.resize(img)
+        arr = np.array(img).astype('float32')
         cls = os.path.basename(os.path.dirname(self.image_paths[idx]))
-        label = self.class_lbl[cls]
+        idx = self.labels.index(cls)
 
-        return img, torch.tensor(label)
+        return torch.tensor(arr), torch.tensor(idx)
 
 
 def getDataLoaders(dataset: CustomDataset):
@@ -131,8 +138,8 @@ def getDataLoaders(dataset: CustomDataset):
 
     return {
         "train": DataLoader(train_set, batch_size=16, shuffle=True),
-        "test": DataLoader(test_set, batch_size=16, shuffle=True),
-        "val": DataLoader(val_set, batch_size=16, shuffle=True)
+        "test": DataLoader(test_set, batch_size=16, shuffle=False),
+        "val": DataLoader(val_set, batch_size=16, shuffle=False)
     }
 
 def train(criterion, opt, model, trainloader, epochs=2, device='cpu'):
@@ -160,11 +167,13 @@ def train(criterion, opt, model, trainloader, epochs=2, device='cpu'):
 testJson = {
     'layers': [
         {'type': 'flatten'},
-        {'type': 'linear', 'in_channels': 28*28, 'out_channels': 256},
+        {'type': 'conv2d', 'in_channels': 28*28*3, 'out_channels': 256, 'kernel_size': [3, 3]},
         {'type': 'relu'},
-        {'type': 'linear', 'in_channels': 256, 'out_channels': 256},
+        {'type': 'linear', 'in_channels': 253, 'out_channels': 253},
         {'type': 'relu'},
-        {'type': 'linear', 'in_channels': 256, 'out_channels': 10}
+        {'type': 'linear', 'in_channels': 253, 'out_channels': 253},
+        {'type': 'relu'},
+        {'type': 'linear', 'in_channels': 253, 'out_channels': 2}
     ],
     'optimizer': {
         'type': 'sgd',
@@ -177,6 +186,30 @@ testJson = {
         'type': 'ReduceLROnPlateau',
     }
 }
+
+def test():
+    device = (
+        "cuda"
+        if torch.cuda.is_available()
+        else "mps"
+        if torch.backends.mps.is_available()
+        else "cpu"
+    )
+    model = torch.load('model.pt')
+    dataset = CustomDataset('data/test')
+    loaders = getDataLoaders(dataset)
+    testloader = loaders['train']
+    correct = 0
+    total = 0
+    with torch.no_grad():
+        for data in testloader:
+            images, labels = data
+            images, labels = images.to(device), labels.to(device)
+            outputs = model(images)
+            _, predicted = torch.max(outputs.data, 1)
+            total += labels.size(0)
+            correct += (predicted == labels).sum().item()
+    print(f'Accuracy of the network on the {total} test images: {100 * correct / total}%')
 
 
 def run(json):
@@ -197,26 +230,9 @@ def run(json):
     criterion = json_to_criterion(json)
 
     
-    dataset = CustomDataset('data')
+    dataset = CustomDataset('data/train')
     loaders = getDataLoaders(dataset)
     trainloader = loaders['train']
-    #trainloader = DataLoader(mnist, batch_size=4, shuffle=True)
-    print(trainloader.batch_size)
     train(criterion, opt, model, trainloader, epochs=2, device=device)
 
-    # validate
-    testLoader = loaders['test']
-    correct = 0
-    total = 0
-    with torch.no_grad():
-        for data in testloader:
-            images, labels = data
-            images, labels = images.to(device), labels.to(device)
-            outputs = model(images)
-            _, predicted = torch.max(outputs.data, 1)
-            total += labels.size(0)
-            correct += (predicted == labels).sum().item()
-    print(f'Accuracy of the network on the {total} test images: {100 * correct / total}%')
-
     torch.save(model, 'model.pt')
-
