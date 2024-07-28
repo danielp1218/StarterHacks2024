@@ -111,18 +111,7 @@
 		const formData = new FormData();
 		formData.append('file', file);
 
-		// const resp = await fetch('http://localhost:5000/dataset', {
-		// 	method: 'POST',
-		// 	body: formData
-		// })
-		// console.log(await resp.text())
-		// if (!done) await socket.emitWithAck("dataset", datasetFile[0]);
-		console.log(456);
-		if (!done) await socket.emitWithAck("train", jsonToSend);
-		console.log(789);
-		done = true;
-		// });
-
+		
 		socket.on("clientError", (message) => {
 			console.error(message);
 		})
@@ -148,6 +137,18 @@
 			a.href = url;
 			a.download = "weights.ckpt";
 		});
+
+		// const resp = await fetch('http://localhost:5000/dataset', {
+		// 	method: 'POST',
+		// 	body: formData
+		// })
+		// console.log(await resp.text())
+		// if (!done) await socket.emitWithAck("dataset", datasetFile[0]);
+		console.log(456);
+		if (!done) await socket.emitWithAck("train", jsonToSend);
+		console.log(789);
+		done = true;
+		// });
 	};
 
 	let waitingForServer = false;
