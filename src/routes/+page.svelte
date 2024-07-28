@@ -106,29 +106,29 @@
 			epochs: epochs
 		};
 
-		const testJson = {
-			"layers": [
-				{ "type": "flatten" },
-				{ "type": "linear", "in_channels": 28 * 28 * 3, "out_channels": 256 },
-				{ "type": "relu" },
-				{ "type": "linear", "in_channels": 256, "out_channels": 256 },
-				{ "type": "relu" },
-				{ "type": "linear", "in_channels": 256, "out_channels": 10 }
-			],
-			"optimizer": {
-				"type": "sgd",
-				"lr": 0.001
-			},
-			"loss": {
-				"type": "CrossEntropyLoss"
-			},
-			"reduceLrOnPlateau": {
-				"type": "ReduceLROnPlateau"
-			},
-			"epochs": 1
-		};
+		// const testJson = {
+		// 	"layers": [
+		// 		{ "type": "flatten" },
+		// 		{ "type": "linear", "in_channels": 28 * 28 * 3, "out_channels": 256 },
+		// 		{ "type": "relu" },
+		// 		{ "type": "linear", "in_channels": 256, "out_channels": 256 },
+		// 		{ "type": "relu" },
+		// 		{ "type": "linear", "in_channels": 256, "out_channels": 10 }
+		// 	],
+		// 	"optimizer": {
+		// 		"type": "sgd",
+		// 		"lr": 0.001
+		// 	},
+		// 	"loss": {
+		// 		"type": "CrossEntropyLoss"
+		// 	},
+		// 	"reduceLrOnPlateau": {
+		// 		"type": "ReduceLROnPlateau"
+		// 	},
+		// 	"epochs": 1
+		// };
 		// @ts-ignore
-		jsonToSend = testJson;
+		// jsonToSend = testJson;
 
 		let done = false;
 
