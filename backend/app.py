@@ -1,5 +1,5 @@
 from flask import Flask, jsonify, request
-from flask_cors import CORS
+from flask_cors import CORS, cross_origin
 from flask_socketio import SocketIO
 
 import os
@@ -70,7 +70,9 @@ def test():
     file = request.files['file']    
     img = Image.open(file.stream)
     res = test_image(img)
-    return jsonify({'res': res})
+    response = jsonify({'res': res})
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    return response
 
 @socketio.on('client_connected')
 def handle_client_connect_event(data):

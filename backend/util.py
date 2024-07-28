@@ -226,8 +226,17 @@ def test_image(img):
     )
     model = torch.load('model.pt').to(device)
     model.eval()
-    res = model(np.array(img).astype('float32').reshape(1, 28, 28))
-    return res
+    res:torch.Tensor = model(torch.tensor((np.array(img.convert('RGB')).astype('float32')).reshape(1, 28 * 28*3)))
+    res_numpy = res.detach().cpu().numpy()
+
+    # Convert the NumPy array to a list
+    res_list = res_numpy.tolist()
+    maxn, maxname = (-10000, '')
+    for x, prob in zip(os.listdir(pathlib.Path(__file__).parent / 'data'), res_list[0]):
+        if prob > maxn:
+            maxn = prob
+            maxname = x
+    return maxname
 
 def run(json):
     device = (

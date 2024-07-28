@@ -82,9 +82,9 @@
 		formData.append("file", file);
 		const res = await fetch("http://localhost:5000/test", {
 			method: "POST",
-			body: formData
+			body: formData,
 		});
-		testingResponse = res;
+		testingResponse = (await res.json())['res'];
 	};
 
 	const train = async () => {
@@ -124,7 +124,8 @@
 			},
 			"reduceLrOnPlateau": {
 				"type": "ReduceLROnPlateau"
-			}
+			},
+			"epochs": 1
 		};
 		// @ts-ignore
 		jsonToSend = testJson;
@@ -207,7 +208,7 @@
 		<Card class="rounded-2xl">
 			<div class="p-8">
 				<h1 class="gradient-text font-bold pb-12">VisualML</h1>
-				<Paginate data={[1, 2, 3, 4]} perPage={1} let:pagination let:current>
+				<Paginate data={[1, 2, 3, 4, 5]} perPage={1} let:pagination let:current>
 					<div class="flex justify-center">
 						<Steps>
 							<Tooltip>
@@ -479,10 +480,11 @@
 											color="secondary"
 											variant="fill"
 											class="w-full"
-											loading={true}
+											loading={false}
 											on:click={test}
 										>Test
 										</Button>
+										<p class="font-bold mt-3">{testingResponse ? `Prediction: ${testingResponse}` : 'Loading...'}</p>
 									</div>
 								</Card>
 							{/if}
@@ -496,7 +498,7 @@
 							on:click={pagination.nextPage}
 							color="primary"
 							variant="fill"
-							disabled={current.isLast || (!finishedTraining && current.page == 4)}
+							disabled={current.isLast}
 						>Next
 						</Button>
 					</div>
