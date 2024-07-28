@@ -50,6 +50,7 @@
 	let epochs = 2;
 	let datasetFile: FileList;
 	let testingImageFiles: FileList;
+	let testingResponse: any = null;
 
 	// How websocket thing will work:
 	// When train is clicked, loads while the files are being sent
@@ -64,8 +65,15 @@
 	// maybe also be able to test it
 
 	const test = async () => {
-		return;
-	};
+		const file = testingImageFiles[0];
+		const formData = new FormData();
+		formData.append('file', file);
+		const res = await fetch('http://localhost:5000/test', {
+			method: 'POST',
+			body: formData
+		});
+		testingResponse = res;
+	}
 
 	const train = async () => {
 		if (!datasetFile) {
@@ -87,13 +95,13 @@
 		};
 
 		const testJson = {
-			"layers": [
-				{ "type": "flatten" },
-				{ "type": "linear", "in_channels": 28 * 28, "out_channels": 256 },
-				{ "type": "relu" },
-				{ "type": "linear", "in_channels": 256, "out_channels": 256 },
-				{ "type": "relu" },
-				{ "type": "linear", "in_channels": 256, "out_channels": 10 }
+			'layers': [
+				{'type': 'flatten'},
+				{'type': 'linear', 'in_channels': 28*28*3, 'out_channels': 256},
+				{'type': 'relu'},
+				{'type': 'linear', 'in_channels': 256, 'out_channels': 256},
+				{'type': 'relu'},
+				{'type': 'linear', 'in_channels': 256, 'out_channels': 10}
 			],
 			"optimizer": {
 				"type": "sgd",
@@ -121,7 +129,7 @@
 
 		socket.on("clientError", (message) => {
 			console.error(message);
-		});
+		})
 
 		socket.on("started_training", (message) => {
 			waitingForServer = false;
@@ -145,6 +153,8 @@
 			a.download = "weights.ckpt";
 		});
 
+		// TODO: UN COMMENT !!!!!
+
 		// const resp = await fetch('http://localhost:5000/dataset', {
 		// 	method: 'POST',
 		// 	body: formData
@@ -165,6 +175,7 @@
 
 	let firstLayer = 0;
 
+	
 
 	const round = (num: number, places: number) => {
 		const multiplier = Math.pow(10, places);
@@ -262,7 +273,7 @@
 											<div class="p-4">
 												{#if i !== 0}
 													<Layer
-														isFirstLayer={i === firstLayer}
+														isFirstLayer={i == firstLayer}
 														inputSize={layers[i - 1].outputSize}
 														bind:layerType={layers[i].type}
 														bind:outputSize={layers[i].outputSize}
@@ -474,35 +485,36 @@
 </main>
 
 <style>
-    * {
-        font-family: Work Sans,
-        sans-serif;
-    }
+	* {
+		font-family:
+			Work Sans,
+			sans-serif;
+	}
 
-    .bg {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        filter: blur(24px);
-    }
+	.bg {
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		filter: blur(24px);
+	}
 
-    .gradient-text {
-        font-size: 72px;
-        background: -webkit-linear-gradient(
-                180deg,
-                rgba(45, 25, 183, 1) 0%,
-                rgba(183, 25, 154, 1) 52%,
-                rgba(255, 96, 0, 1) 100%
-        );
-        background-clip: text;
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-    }
+	.gradient-text {
+		font-size: 72px;
+		background: -webkit-linear-gradient(
+			180deg,
+			rgba(45, 25, 183, 1) 0%,
+			rgba(183, 25, 154, 1) 52%,
+			rgba(255, 96, 0, 1) 100%
+		);
+		background-clip: text;
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+	}
 
-    input[type="file"] {
-        display: none;
-    }
+	input[type="file"] {
+		display: none;
+	}
 </style>
