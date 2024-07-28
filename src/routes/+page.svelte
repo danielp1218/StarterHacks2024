@@ -1,7 +1,19 @@
 <script lang="ts">
-	import { Button, Card, Field, NumberStepper, Paginate, Progress, Step, Steps, Tooltip } from "svelte-ux";
+	import {
+		Button,
+		Card,
+		Field,
+		Icon,
+		Notification,
+		NumberStepper,
+		Paginate,
+		Progress,
+		Step,
+		Steps,
+		Tooltip
+	} from "svelte-ux";
 	import Layer from "$lib/components/Layer.svelte";
-	import { mdiTrashCan } from "@mdi/js";
+	import { mdiCheckCircleOutline, mdiTrashCan } from "@mdi/js";
 	import { slide } from "svelte/transition";
 	import { io } from "socket.io-client";
 	import { quintIn } from "svelte/easing";
@@ -67,13 +79,13 @@
 	const test = async () => {
 		const file = testingImageFiles[0];
 		const formData = new FormData();
-		formData.append('file', file);
-		const res = await fetch('http://localhost:5000/test', {
-			method: 'POST',
+		formData.append("file", file);
+		const res = await fetch("http://localhost:5000/test", {
+			method: "POST",
 			body: formData
 		});
 		testingResponse = res;
-	}
+	};
 
 	const train = async () => {
 		if (!datasetFile) {
@@ -95,13 +107,13 @@
 		};
 
 		const testJson = {
-			'layers': [
-				{'type': 'flatten'},
-				{'type': 'linear', 'in_channels': 28*28*3, 'out_channels': 256},
-				{'type': 'relu'},
-				{'type': 'linear', 'in_channels': 256, 'out_channels': 256},
-				{'type': 'relu'},
-				{'type': 'linear', 'in_channels': 256, 'out_channels': 10}
+			"layers": [
+				{ "type": "flatten" },
+				{ "type": "linear", "in_channels": 28 * 28 * 3, "out_channels": 256 },
+				{ "type": "relu" },
+				{ "type": "linear", "in_channels": 256, "out_channels": 256 },
+				{ "type": "relu" },
+				{ "type": "linear", "in_channels": 256, "out_channels": 10 }
 			],
 			"optimizer": {
 				"type": "sgd",
@@ -129,7 +141,7 @@
 
 		socket.on("clientError", (message) => {
 			console.error(message);
-		})
+		});
 
 		socket.on("started_training", (message) => {
 			waitingForServer = false;
@@ -175,7 +187,6 @@
 
 	let firstLayer = 0;
 
-	
 
 	const round = (num: number, places: number) => {
 		const multiplier = Math.pow(10, places);
@@ -195,7 +206,7 @@
 	<div class="py-32 flex justify-center">
 		<Card class="rounded-2xl">
 			<div class="p-8">
-				<h1 class="gradient-text font-bold pb-12">MLCraft</h1>
+				<h1 class="gradient-text font-bold pb-12">VisualML</h1>
 				<Paginate data={[1, 2, 3, 4]} perPage={1} let:pagination let:current>
 					<div class="flex justify-center">
 						<Steps>
@@ -356,31 +367,31 @@
 									<div class="p-4">
 										<Tooltip
 											title="A learning rate scheduler adjusts the learning rate during training to improve model performance.">
-										<h1 class="text-2xl font-semibold pb-4">Scheduler Type</h1>
-										<Field label="Type" let:id>
-											<select
-												bind:value={schedulerType}
-												{id}
-												class="text-sm w-full outline-none appearance-none cursor-pointer bg-surface-100"
-											>
-												<option value={"plateau"}>ReduceLROnPlateau</option>
-												<option value={"none"}>None</option>
-											</select>
-											<span slot="append"></span>
-										</Field>
+											<h1 class="text-2xl font-semibold pb-4">Scheduler Type</h1>
+											<Field label="Type" let:id>
+												<select
+													bind:value={schedulerType}
+													{id}
+													class="text-sm w-full outline-none appearance-none cursor-pointer bg-surface-100"
+												>
+													<option value={"plateau"}>ReduceLROnPlateau</option>
+													<option value={"none"}>None</option>
+												</select>
+												<span slot="append"></span>
+											</Field>
 										</Tooltip>
 										<div class="py-4" />
 										{#if schedulerType === "plateau"}
 											<Tooltip
 												title="The number of epochs with no improvement after which learning rate will be reduced.">
-											<h1 class="text-2xl font-semibold pb-4">Patience</h1>
-											<NumberStepper
-												class="w-full"
-												on:change={(e) => (patience = e.detail.value)}
-												min={2}
-												value={patience}
-												bind:patience
-											/>
+												<h1 class="text-2xl font-semibold pb-4">Patience</h1>
+												<NumberStepper
+													class="w-full"
+													on:change={(e) => (patience = e.detail.value)}
+													min={2}
+													value={patience}
+													bind:patience
+												/>
 											</Tooltip>
 										{/if}
 									</div>
@@ -390,14 +401,14 @@
 									<div class="p-4">
 										<Tooltip
 											title="An epoch is a single pass through the entire dataset during training.">
-										<h1 class="text-2xl font-semibold pb-4">Epochs</h1>
-										<NumberStepper
-											class="w-full"
-											on:change={(e) => (epochs = e.detail.value)}
-											min={1}
-											value={epochs}
-											bind:epochs
-										/>
+											<h1 class="text-2xl font-semibold pb-4">Epochs</h1>
+											<NumberStepper
+												class="w-full"
+												on:change={(e) => (epochs = e.detail.value)}
+												min={1}
+												value={epochs}
+												bind:epochs
+											/>
 										</Tooltip>
 										<div class="py-4" />
 										<div class="flex items-center gap-4">
@@ -430,6 +441,17 @@
 											on:click={train}
 										>Train
 										</Button>
+										{#if finishedTraining}
+											<div class="w-[400px] pt-8">
+												<Notification open closeIcon>
+													<div slot="icon">
+														<Icon data={mdiCheckCircleOutline} class="text-success-500" />
+													</div>
+													<div slot="title">FFinished Training!</div>
+													<div slot="description">You can now test the model.</div>
+												</Notification>
+											</div>
+										{/if}
 									</div>
 								</Card>
 							{:else if current.page === 5}
@@ -485,36 +507,35 @@
 </main>
 
 <style>
-	* {
-		font-family:
-			Work Sans,
-			sans-serif;
-	}
+    * {
+        font-family: Work Sans,
+        sans-serif;
+    }
 
-	.bg {
-		position: fixed;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
-		filter: blur(24px);
-	}
+    .bg {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        filter: blur(24px);
+    }
 
-	.gradient-text {
-		font-size: 72px;
-		background: -webkit-linear-gradient(
-			180deg,
-			rgba(45, 25, 183, 1) 0%,
-			rgba(183, 25, 154, 1) 52%,
-			rgba(255, 96, 0, 1) 100%
-		);
-		background-clip: text;
-		-webkit-background-clip: text;
-		-webkit-text-fill-color: transparent;
-	}
+    .gradient-text {
+        font-size: 72px;
+        background: -webkit-linear-gradient(
+                180deg,
+                rgba(45, 25, 183, 1) 0%,
+                rgba(183, 25, 154, 1) 52%,
+                rgba(255, 96, 0, 1) 100%
+        );
+        background-clip: text;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
 
-	input[type="file"] {
-		display: none;
-	}
+    input[type="file"] {
+        display: none;
+    }
 </style>
